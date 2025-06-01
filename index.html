@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minimal Scientific Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .btn-operator {
+            transition: all 0.2s;
+        }
+        .btn-operator:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+        }
+        .btn-number {
+            transition: all 0.2s;
+        }
+        .btn-number:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
+        }
+        .display {
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.2);
+        }
+        .history-item {
+            transition: all 0.2s;
+        }
+        .history-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        @media (max-width: 640px) {
+            .calculator {
+                width: 95%;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen flex items-center justify-center p-4">
+    <div class="calculator bg-gray-800 rounded-xl shadow-2xl overflow-hidden w-full max-w-md">
+        <!-- Display Area -->
+        <div class="p-4 bg-gray-700">
+            <div class="display text-right text-3xl font-light mb-2 h-10 overflow-x-auto whitespace-nowrap" id="display">0</div>
+            <div class="text-right text-gray-400 text-sm h-5 overflow-x-auto whitespace-nowrap" id="history"></div>
+        </div>
+        
+        <!-- History Panel (hidden by default) -->
+        <div class="history-panel bg-gray-750 max-h-48 overflow-y-auto hidden" id="historyPanel">
+            <div class="p-2 text-center text-gray-400 border-b border-gray-700">Calculation History</div>
+            <div class="history-list" id="historyList"></div>
+        </div>
+        
+        <!-- Button Grid -->
+        <div class="grid grid-cols-5 gap-1 p-2">
+            <!-- Row 1 -->
+            <button class="btn-operator bg-gray-700 hover:bg-gray-600 p-4 rounded-lg" onclick="clearDisplay()">C</button>
+            <button class="btn-operator bg-gray-700 hover:bg-gray-600 p-4 rounded-lg" onclick="toggleHistory()">
+                <i class="fas fa-history"></i>
+            </button>
+            <button class="btn-operator bg-gray-700 hover:bg-gray-600 p-4 rounded-lg" onclick="backspace()">
+                <i class="fas fa-backspace"></i>
+            </button>
+            <button class="btn-operator bg-gray-700 hover:bg-gray-600 p-4 rounded-lg" onclick="addToDisplay('%')">%</button>
+            <button class="btn-operator bg-red-600 hover:bg-red-500 p-4 rounded-lg" onclick="calculate()">=</button>
+            
+            <!-- Row 2 -->
+            <button class="btn-operator bg-gray-700 hover:bg-gray-600 p-4 rounded-lg" onclick="addToDisplay('Math.sin(')">sin</button>
+            <button class="btn-operator bg-gray-700 hover:bg-gray-600 p-4 rounded-lg" onclick="addToDisplay('Math.cos(')">cos</button>
+            <button class="btn-operator bg-gray-700 hover:bg-gray-600 p-4 rounded-lg" onclick="addToDisplay('Math.tan(')">tan</button>
+            <button class="btn-operator bg-gray-700 hover:bg-gray-600 p-4 rounded-lg" onclick="addToDisplay('Math.log(')">ln</button>
+            <button class="btn-operator bg-gray-700 hover:bg-gray-600 p-4 rounded-lg" onclick="addToDisplay('Math.log10(')">log</button>
+            
+            <!-- Row 3 -->
+            <button class="btn-operator bg-gray-700 hover:bg-gray-600 p-4 rounded-lg" onclick="addToDisplay('Math.PI')">π</button>
+            <button class="btn-operator bg-gray-700 hover:bg-gray-600 p-4 rounded-lg" onclick="addToDisplay('Math.E')">e</button>
+            <button class="btn-operator bg-gray-700 hover:bg-gray-600 p-4 rounded-lg" onclick="addToDisplay('(')">(</button>
+            <button class="btn-operator bg-gray-700 hover:bg-gray-600 p-4 rounded-lg" onclick="addToDisplay(')')">)</button>
+            <button class="btn-operator bg-gray-700 hover:bg-gray-600 p-4 rounded-lg" onclick="addToDisplay('^')">^</button>
+            
+            <!-- Row 4 -->
+            <button class="btn-operator bg-gray-700 hover:bg-gray-600 p-4 rounded-lg" onclick="addToDisplay('Math.sqrt(')">√</button>
+            <button class="btn-number bg-gray-600 hover:bg-gray-500 p-4 rounded-lg" onclick="addToDisplay('7')">7</button>
+            <button class="btn-number bg-gray-600 hover:bg-gray-500 p-4 rounded-lg" onclick="addToDisplay('8')">8</button>
+            <button class="btn-number bg-gray-600 hover:bg-gray-500 p-4 rounded-lg" onclick="addToDisplay('9')">9</button>
+            <button class="btn-operator bg-gray-700 hover:bg-gray-600 p-4 rounded-lg" onclick="addToDisplay('/')">/</button>
+            
+            <!-- Row 5 -->
+            <button class="btn-operator bg-gray-700 hover:bg-gray-600 p-4 rounded-lg" onclick="addToDisplay('Math.abs(')">|x|</button>
+            <button class="btn-number bg-gray-600 hover:bg-gray-500 p-4 rounded-lg" onclick="addToDisplay('4')">4</button>
+            <button class="btn-number bg-gray-600 hover:bg-gray-500 p-4 rounded-lg" onclick="addToDisplay('5')">5</button>
+            <button class="btn-number bg-gray-600 hover:bg-gray-500 p-4 rounded-lg" onclick="addToDisplay('6')">6</button>
+            <button class="btn-operator bg-gray-700 hover:bg-gray-600 p-4 rounded-lg" onclick="addToDisplay('*')">×</button>
+            
+            <!-- Row 6 -->
+            <button class="btn-operator bg-gray-700 hover:bg-gray-600 p-4 rounded-lg" onclick="addToDisplay('Math.pow(10,')">10^x</button>
+            <button class="btn-number bg-gray-600 hover:bg-gray-500 p-4 rounded-lg" onclick="addToDisplay('1')">1</button>
+            <button class="btn-number bg-gray-600 hover:bg-gray-500 p-4 rounded-lg" onclick="addToDisplay('2')">2</button>
+            <button class="btn-number bg-gray-600 hover:bg-gray-500 p-4 rounded-lg" onclick="addToDisplay('3')">3</button>
+            <button class="btn-operator bg-gray-700 hover:bg-gray-600 p-4 rounded-lg" onclick="addToDisplay('-')">-</button>
+            
+            <!-- Row 7 -->
+            <button class="btn-operator bg-gray-700 hover:bg-gray-600 p-4 rounded-lg" onclick="addToDisplay('Math.pow(')">x^y</button>
+            <button class="btn-number bg-gray-600 hover:bg-gray-500 p-4 rounded-lg" onclick="addToDisplay('0')">0</button>
+            <button class="btn-number bg-gray-600 hover:bg-gray-500 p-4 rounded-lg" onclick="addToDisplay('.')">.</button>
+            <button class="btn-operator bg-gray-700 hover:bg-gray-600 p-4 rounded-lg" onclick="addToDisplay('1e')">e</button>
+            <button class="btn-operator bg-gray-700 hover:bg-gray-600 p-4 rounded-lg" onclick="addToDisplay('+')">+</button>
+        </div>
+    </div>
+
+    <script>
+        let currentInput = '0';
+        let calculationHistory = [];
+        const display = document.getElementById('display');
+        const historyElement = document.getElementById('history');
+        const historyPanel = document.getElementById('historyPanel');
+        const historyList = document.getElementById('historyList');
+        
+        // Update the display
+        function updateDisplay() {
+            display.textContent = currentInput;
+        }
+        
+        // Add to display
+        function addToDisplay(value) {
+            if (currentInput === '0' && value !== '.') {
+                currentInput = value;
+            } else {
+                currentInput += value;
+            }
+            updateDisplay();
+        }
+        
+        // Clear display
+        function clearDisplay() {
+            currentInput = '0';
+            historyElement.textContent = '';
+            updateDisplay();
+        }
+        
+        // Backspace
+        function backspace() {
+            if (currentInput.length === 1) {
+                currentInput = '0';
+            } else {
+                currentInput = currentInput.slice(0, -1);
+            }
+            updateDisplay();
+        }
+        
+        // Calculate result
+        function calculate() {
+            let expression = currentInput;
+            let result;
+            
+            try {
+                // Replace special notations with JavaScript equivalents
+                expression = expression.replace(/\^/g, '');
+                expression = expression.replace(/%/g, '/100');
+                
+                // Evaluate the expression
+                result = eval(expression);
+                
+                // Handle very large or small numbers with scientific notation
+                if (Math.abs(result) > 1e12 || (Math.abs(result) < 1e-4 && result !== 0)) {
+                    result = result.toExponential(6);
+                }
+                
+                
+                calculationHistory.push(${expression} = ${result});
+                if (calculationHistory.length > 10) {
+                    calculationHistory.shift();
+                }
+                updateHistoryList();
+                
+                
+                historyElement.textContent = expression;
+                currentInput = result.toString();
+                updateDisplay();
+            } catch (error) {
+                currentInput = 'Error';
+                updateDisplay();
+                setTimeout(clearDisplay, 1000);
+            }
+        }
+        
+        
+        function toggleHistory() {
+            historyPanel.classList.toggle('hidden');
+        }
+        
+        
+        function updateHistoryList() {
+            historyList.innerHTML = '';
+            calculationHistory.reverse().forEach(item => {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'history-item p-2 border-b border-gray-700 cursor-pointer';
+                historyItem.textContent = item;
+                historyItem.onclick = function() {
+                    currentInput = item.split(' = ')[0];
+                    updateDisplay();
+                    historyPanel.classList.add('hidden');
+                };
+                historyList.appendChild(historyItem);
+            });
+        }
+        
+        
+        updateDisplay();
+    </script>
+</body>
+</html>
